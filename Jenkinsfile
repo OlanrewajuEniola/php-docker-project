@@ -7,7 +7,12 @@ pipeline {
                 sh 'sudo apt-get update && sudo apt-get install -y puppet'
             }
         }
-
+	stage('Debug Ansible') {
+    	    steps {
+        sh 'which ansible-playbook'
+        sh 'ansible-playbook --version'
+       }
+    }
         stage('Run Ansible to Install Docker') {
             steps {
                 sh 'sudo apt-get update && ansible-playbook -i hosts install-docker.yml'
