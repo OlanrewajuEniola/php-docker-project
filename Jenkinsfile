@@ -15,7 +15,7 @@ pipeline {
     }
         stage('Run Ansible to Install Docker') {
             steps {
-                sh 'sudo apt-get update && ansible-playbook -i hosts install-docker.yml'
+                sh 'sudo apt-get update && ansible-playbook -i hosts install-docker.yaml'
             }
         }
 
