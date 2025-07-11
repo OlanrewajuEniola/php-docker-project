@@ -1,0 +1,2 @@
+# Ignore Ansible inventory file created by Jenkins
+hosts
