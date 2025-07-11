@@ -2,8 +2,7 @@ pipeline {
     agent { label 'slave' }
 
     stages {
-
-	stage('Clone or Pull GitHub Repo') {
+        stage('Clone or Pull GitHub Repo') {
             steps {
                 sh '''
                    if [ ! -d /home/ubuntu/php-docker-project ]; then
@@ -21,34 +20,38 @@ pipeline {
             }
         }
 
- 	stage('Prepare Ansible Hosts') {
+        stage('Prepare Ansible Hosts') {
             steps {
                 sh '''
                    echo "[slaves]" > /home/ubuntu/php-docker-project/hosts
-                   echo "3.252.69.92 ansible_user=ubuntu" >> /home/ubuntu/php-docker-project/hosts
+                   echo "34.253.105.138 ansible_user=ubuntu ansible_ssh_private_key_file=/home/ubuntu/.ssh/IrelandKey.pem" >> /home/ubuntu/php-docker-project/hosts
                 '''
             }
         }
 
-   	stage('Debug Ansible') {
+        stage('Debug Ansible') {
             steps {
                 sh 'which ansible-playbook'
                 sh 'ansible-playbook --version'
-           }
-       }
-	        
-	stage('Run Ansible to Install Docker') {
-    	    steps {
-        	sh 'sudo apt-get update && sudo apt-get install -y ansible'
-        	sh 'cd /home/ubuntu/php-docker-project && ansible-playbook -i hosts install-docker.yaml'
             }
-	}
+        }
+
+	stage('Run Ansible to Install Docker') {
+  	   steps {
+    		sh '''
+      		  sudo apt-get update
+      		  sudo apt-get install -y ansible
+      		  cd /home/ubuntu/php-docker-project
+      		  ansible-playbook -i hosts install-docker.yaml
+    		'''
+  	    }
+        }
 
         stage('Build and Deploy Docker Container') {
             steps {
-    		sh 'cd /home/ubuntu/php-docker-project && docker build -t my-php-app .'
-    		sh 'docker rm -f php-app || true'
-    		sh 'docker run -d -p 80:80 --name php-app my-php-app'
+                sh 'cd /home/ubuntu/php-docker-project && docker build -t my-php-app .'
+                sh 'docker rm -f php-app || true'
+                sh 'docker run -d -p 80:80 --name php-app my-php-app'
             }
         }
     }

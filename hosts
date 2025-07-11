@@ -1,3 +1,2 @@
 [slaves]
-3.252.69.92 ansible_user=ubuntu
-
+34.253.105.138 ansible_user=ubuntu ansible_ssh_private_key_file=/home/ubuntu/.ssh/IrelandKey.pem
