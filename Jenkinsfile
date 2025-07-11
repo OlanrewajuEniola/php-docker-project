@@ -24,8 +24,8 @@ pipeline {
             steps {
                 sh '''
                    echo "[slaves]" > /home/ubuntu/php-docker-project/hosts
-                   echo "34.253.105.138 ansible_user=ubuntu ansible_ssh_private_key_file=/home/ubuntu/.ssh/IrelandKey.pem" >> /home/ubuntu/php-docker-project/hosts
-                '''
+                   echo "34.253.105.138 ansible_user=ubuntu ansible_ssh_private_key_file=/home/ubuntu/.ssh/IrelandKey.pem" >> /home/ub		        	untu/php-docker-project/hosts   
+	       '''
             }
         }
 
