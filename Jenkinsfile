@@ -1,9 +1,8 @@
-// Jenkinsfile
 pipeline {
-    agent { label 'slave' } // This specifies that most stages will run on the agent labeled 'slave'
+    agent { label 'slave' }
 
     stages {
-        stage('Install Puppet Agent') { // This is Job 1
+        stage('Install Puppet Agent') {
             steps {
                 script {
                     echo "Updating packages and installing Puppet on current Slave node."
@@ -12,35 +11,34 @@ pipeline {
             }
         }
 
-        stage('Run Ansible to Install Docker') { // This is Job 2
-            agent { label 'built-in' } // This stage will run on the Jenkins built-in node (your Master EC2)
+        stage('Run Ansible to Install Docker') {
+            agent { label 'built-in' } // <--- CRITICAL FIX: This stage will run on the Master (built-in) node
+
             steps {
                 script {
-                    def masterProjectDir = WORKSPACE // Corrected to use Jenkins's built-in WORKSPACE variable
+                    def masterProjectDir = WORKSPACE // <--- CRITICAL FIX: Use WORKSPACE for the correct path
 
                     echo "Ensuring Ansible is installed on Master and running playbook to install Docker on Slave."
+
                     sh "sudo apt-get update && sudo apt-get install -y ansible || true"
                     sh "cd ${masterProjectDir} && ansible-playbook -i hosts install-docker.yaml"
                 }
             }
         }
 
-        stage('Build and Deploy Docker Container') { // This is Job 3
-            // This stage will use the pipeline's default agent: 'slave'
+        stage('Build and Deploy Docker Container') {
             steps {
                 script {
-                    // Dynamically get the IP address of the 'slave' node
-                    // IMPORTANT: This line requires script approval in Jenkins if it's the first time running it.
                     def slaveNode = Jenkins.instance.getNode('slave')
                     def slaveIp = slaveNode.getComputer().getDescriptor().getIpAddress(slaveNode)
                     if (slaveIp == null) {
                         echo "Warning: Could not dynamically determine slave IP. Using hardcoded fallback."
-                        slaveIp = '18.203.232.61' // Fallback to your last known IP
-                    }
+                        slaveIp = '3.253.245.56' // Replace with your Slave node's Public IP if this changes often
+                }
 
                     def sshKeyPath = '/home/ubuntu/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
-                    def remoteProjectDir = '/home/ubuntu/php-docker-project' // Directory on the Slave
-                    def githubRepo = 'https://github.com/OlanrewajuEniola/php-docker-project.git'
+                    def remoteProjectDir = '/home/ubuntu/php-docker-project' // Desired project directory on the Slave
+                    def githubRepo = 'https://github.com/OlanrewajuEniola/php-docker-project.git' // Your GitHub repository URL
 
                     echo "Cloning or updating project on Slave: ${slaveIp}"
                     sh "ssh -i ${sshKeyPath} ubuntu@${slaveIp} \"git clone ${githubRepo} ${remoteProjectDir} || (cd ${remoteProjectDir} && git pull)\""
@@ -62,7 +60,7 @@ pipeline {
                         def slaveNode = Jenkins.instance.getNode('slave')
                         def slaveIp = slaveNode.getComputer().getDescriptor().getIpAddress(slaveNode)
                         if (slaveIp == null) {
-                            slaveIp = '18.203.232.61' // Fallback
+                            slaveIp = '3.253.245.56' // Fallback
                         }
                         def sshKeyPath = '/home/ubuntu/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
                         sh "ssh -i ${sshKeyPath} ubuntu@${slaveIp} \"docker rm -f php-app || true\""
