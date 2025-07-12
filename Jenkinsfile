@@ -6,17 +6,15 @@ pipeline {
         stage('Install Puppet Agent') { // This is Job 1
             steps {
                 script {
-                    def slaveIp = '18.203.232.61' // Your Slave node's Public IP
-                    def sshKeyPath = '/home/ubuntu/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
-
-                    echo "Updating packages and installing Puppet on Slave: ${slaveIp}"
-                    sh "ssh -i ${sshKeyPath} ubuntu@${slaveIp} \"sudo apt-get update && sudo apt-get install -y puppet\""
+                    // No need for slaveIp or sshKeyPath here, as commands run directly on the slave
+                    echo "Updating packages and installing Puppet on current Slave node."
+                    sh "sudo apt-get update && sudo apt-get install -y puppet" // <--- CORRECTED LINE
                 }
             }
         }
 
         stage('Run Ansible to Install Docker') { // This is Job 2
-            agent { label 'built-in' } // <--- IMPORTANT: This stage will run on the Jenkins built-in node (your Master EC2)
+            agent { label 'built-in' } // This stage will run on the Jenkins built-in node (your Master EC2)
             steps {
                 script {
                     def masterProjectDir = '/home/ubuntu/php-docker-project' // Project directory on the Master where ansible files are
@@ -36,7 +34,7 @@ pipeline {
                     def slaveIp = '18.203.232.61' // Your Slave node's Public IP
                     def sshKeyPath = '/home/ubuntu/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
                     def remoteProjectDir = '/home/ubuntu/php-docker-project' // Directory on the Slave
-                    def githubRepo = 'https://github.com/OlanrejEniola/php-docker-project.git' // Corrected repo URL as per provided snippets
+                    def githubRepo = 'https://github.com/OlanrewajuEniola/php-docker-project.git' // Corrected repo URL as per provided snippets
 
                     echo "Cloning or updating project on Slave: ${slaveIp}"
                     sh "ssh -i ${sshKeyPath} ubuntu@${slaveIp} \"git clone ${githubRepo} ${remoteProjectDir} || (cd ${remoteProjectDir} && git pull)\""
@@ -57,7 +55,6 @@ pipeline {
                         echo 'Job 3 (Build and Deploy) failed. Attempting to delete the running container on Test Server.'
                         def slaveIp = '18.203.232.61' // Ensure this is the correct Slave node IP
                         def sshKeyPath = '/home/ubuntu/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
-// Path to your SSH key on the Master
                         sh "ssh -i ${sshKeyPath} ubuntu@${slaveIp} \"docker rm -f php-app || true\""
                         echo 'Container deletion attempt completed.'
                     }
