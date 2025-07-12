@@ -6,9 +6,8 @@ pipeline {
         stage('Install Puppet Agent') { // This is Job 1
             steps {
                 script {
-                    // No need for slaveIp or sshKeyPath here, as commands run directly on the slave
                     echo "Updating packages and installing Puppet on current Slave node."
-                    sh "sudo apt-get update && sudo apt-get install -y puppet" // <--- CORRECTED LINE
+                    sh "sudo apt-get update && sudo apt-get install -y puppet"
                 }
             }
         }
@@ -17,7 +16,9 @@ pipeline {
             agent { label 'built-in' } // This stage will run on the Jenkins built-in node (your Master EC2)
             steps {
                 script {
-                    def masterProjectDir = '/home/ubuntu/php-docker-project' // Project directory on the Master where ansible files are
+                    // *** IMPORTANT CHANGE HERE ***
+                    // Use WORKSPACE variable, which points to the Git checkout directory for this build
+                    def masterProjectDir = WORKSPACE // Corrected to use Jenkins's built-in WORKSPACE variable
 
                     echo "Ensuring Ansible is installed on Master and running playbook to install Docker on Slave."
                     // These commands will now run directly on the Jenkins built-in node (your Master EC2)
