@@ -1,56 +1,73 @@
+// Jenkinsfile
 pipeline {
-    agent { label 'slave' }
-    // REMOVE the 'options { cleanWs() }' block entirely from here.
-    // cleanWs() is not a valid option type.
+    agent { label 'slave' } // This specifies that most stages will run on the agent labeled 'slave'
 
     stages {
-        stage('Install Puppet Agent') {
+        stage('Install Puppet Agent') { // This is Job 1
             steps {
-                sh 'sudo apt-get update && sudo apt-get install -y puppet'
+                script {
+                    def slaveIp = '18.203.232.61' // Your Slave node's Public IP
+                    def sshKeyPath = '/home/ubuntu/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
+
+                    echo "Updating packages and installing Puppet on Slave: ${slaveIp}"
+                    sh "ssh -i ${sshKeyPath} ubuntu@${slaveIp} \"sudo apt-get update && sudo apt-get install -y puppet\""
+                }
             }
         }
 
-        stage('Prepare Ansible Hosts') {
+        stage('Run Ansible to Install Docker') { // This is Job 2
+            agent { label 'built-in' } // <--- IMPORTANT: This stage will run on the Jenkins built-in node (your Master EC2)
             steps {
-                sh '''
-                    echo "[slaves]" > hosts
-                    echo "34.253.105.138 ansible_user=ubuntu ansible_ssh_private_key_file=/home/ubuntu/.ssh/IrelandKey.pem" >> hosts
-                '''
+                script {
+                    def masterProjectDir = '/home/ubuntu/php-docker-project' // Project directory on the Master where ansible files are
+
+                    echo "Ensuring Ansible is installed on Master and running playbook to install Docker on Slave."
+                    // These commands will now run directly on the Jenkins built-in node (your Master EC2)
+                    sh "sudo apt-get update && sudo apt-get install -y ansible || true" // Ensure Ansible is installed on Master
+                    sh "cd ${masterProjectDir} && ansible-playbook -i hosts install-docker.yaml"
+                }
             }
         }
 
-        stage('Debug Ansible') {
+        stage('Build and Deploy Docker Container') { // This is Job 3
+            // This stage will use the pipeline's default agent: 'slave'
             steps {
-                sh 'which ansible-playbook'
-                sh 'ansible-playbook --version'
-            }
-        }
+                script {
+                    def slaveIp = '18.203.232.61' // Your Slave node's Public IP
+                    def sshKeyPath = '/home/ubuntu/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
+                    def remoteProjectDir = '/home/ubuntu/php-docker-project' // Directory on the Slave
+                    def githubRepo = 'https://github.com/OlanrejEniola/php-docker-project.git' // Corrected repo URL as per provided snippets
 
-        stage('Run Ansible to Install Docker') {
-            steps {
-                sh '''
-                    sudo apt-get update
-                    sudo apt-get install -y ansible
-                    ansible-playbook -i hosts install-docker.yaml -vvv
-                '''
-            }
-        }
+                    echo "Cloning or updating project on Slave: ${slaveIp}"
+                    sh "ssh -i ${sshKeyPath} ubuntu@${slaveIp} \"git clone ${githubRepo} ${remoteProjectDir} || (cd ${remoteProjectDir} && git pull)\""
 
-        stage('Build and Deploy Docker Container') {
-            steps {
-                sh 'docker build -t my-php-app .'
-                sh 'docker rm -f php-app || true'
-                sh 'docker run -d -p 80:80 --name php-app my-php-app'
-            }
-        }
-    }
+                    echo "Building Docker image on Slave: ${slaveIp}"
+                    sh "ssh -i ${sshKeyPath} ubuntu@${slaveIp} \"cd ${remoteProjectDir} && docker build --no-cache -t my-php-app .\""
 
-    post {
-        always { // This ensures cleanWs() runs whether the build succeeds or fails
-            cleanWs() // <-- Place cleanWs() here as a post-build step
-        }
-        failure {
-            sh 'docker rm -f php-app || true'
+                    echo "Stopping and removing existing container on Slave: ${slaveIp}"
+                    sh "ssh -i ${sshKeyPath} ubuntu@${slaveIp} \"docker rm -f php-app || true\""
+
+                    echo "Running new Docker container on Slave: ${slaveIp}"
+                    sh "ssh -i ${sshKeyPath} ubuntu@${slaveIp} \"docker run -d -p 80:80 --name php-app my-php-app\""
+                }
+            }
+            post {
+                failure {
+                    script {
+                        echo 'Job 3 (Build and Deploy) failed. Attempting to delete the running container on Test Server.'
+                        def slaveIp = '18.203.232.61' // Ensure this is the correct Slave node IP
+                        def sshKeyPath = '/home/ubuntu/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
+                        sh "ssh -i ${sshKeyPath} ubuntu@${slaveIp} \"docker rm -f php-app || true\""
+                        echo 'Container deletion attempt completed.'
+                    }
+                }
+                success {
+                    echo 'PHP application built and deployed successfully on the Test Server!'
+                }
+                always {
+                    echo 'Finished Build and Deploy Docker Container stage.'
+                }
+            }
         }
     }
 }
