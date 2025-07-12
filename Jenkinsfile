@@ -57,6 +57,7 @@ pipeline {
                         echo 'Job 3 (Build and Deploy) failed. Attempting to delete the running container on Test Server.'
                         def slaveIp = '18.203.232.61' // Ensure this is the correct Slave node IP
                         def sshKeyPath = '/home/ubuntu/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
+// Path to your SSH key on the Master
                         sh "ssh -i ${sshKeyPath} ubuntu@${slaveIp} \"docker rm -f php-app || true\""
                         echo 'Container deletion attempt completed.'
                     }
