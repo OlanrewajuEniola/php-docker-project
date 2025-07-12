@@ -33,7 +33,7 @@ pipeline {
                     def slaveIp = slaveNode.getComputer().getDescriptor().getIpAddress(slaveNode)
                     if (slaveIp == null) {
                         echo "Warning: Could not dynamically determine slave IP. Using hardcoded fallback."
-                        slaveIp = '3.253.245.56' // Replace with your Slave node's Public IP if this changes often
+                        slaveIp '34.244.40.80' // Replace with your Slave node's Public IP if this changes often
                 }
 
                     def sshKeyPath = '/home/ubuntu/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
@@ -60,7 +60,7 @@ pipeline {
                         def slaveNode = Jenkins.instance.getNode('slave')
                         def slaveIp = slaveNode.getComputer().getDescriptor().getIpAddress(slaveNode)
                         if (slaveIp == null) {
-                            slaveIp = '3.253.245.56' // Fallback
+                            slaveIp = '34.244.40.80' // Fallback
                         }
                         def sshKeyPath = '/home/ubuntu/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
                         sh "ssh -i ${sshKeyPath} ubuntu@${slaveIp} \"docker rm -f php-app || true\""
