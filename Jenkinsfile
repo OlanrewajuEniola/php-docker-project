@@ -1,4 +1,4 @@
-:wqpipeline {
+pipeline {
     agent { label 'slave' }
 
     stages {
