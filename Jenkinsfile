@@ -80,7 +80,7 @@ pipeline {
 
                     if (slaveIp == null || slaveIp == '') { // Changed .isEmpty() to == '' for robustness
                         echo "Warning: Could not dynamically determine slave IP. Using hardcoded fallback."
-                        slaveIp = '108.130.148.200' // <--- UPDATE THIS LINE with your latest Slave IP
+                        slaveIp = '54.195.215.77' // <--- UPDATE THIS LINE with your latest Slave IP
                     }
 
                     def sshKeyPath = '/var/lib/jenkins/.ssh/IrelandKey.pem' // Path to your SSH key for jenkins user on the Master
@@ -124,7 +124,7 @@ pipeline {
                             }
                         }
                         if (slaveIp == null || slaveIp == '') { // Changed .isEmpty() to == '' for robustness
-                            slaveIp = '108.130.148.200' // <--- UPDATE THIS LINE with your latest Slave IP
+                            slaveIp = '54.195.215.77' // <--- UPDATE THIS LINE with your latest Slave IP
                         }
                         def sshKeyPath = '/var/lib/jenkins/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
                         // Forcefully remove the container on the slave. '|| true' ensures the cleanup itself doesn't fail.
