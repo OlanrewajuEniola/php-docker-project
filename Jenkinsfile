@@ -45,7 +45,7 @@ pipeline {
 
                     if (slaveIp == null || slaveIp.isEmpty()) {
                         echo "Warning: Could not dynamically determine slave IP. Using hardcoded fallback."
-                        slaveIp = '54.78.12.87' // <--- UPDATE THIS LINE with your latest Slave IP
+                        slaveIp = '34.241.242.253' // <--- UPDATE THIS LINE with your latest Slave IP
                     }
 
                     def sshKeyPath = '/home/ubuntu/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
@@ -87,7 +87,7 @@ pipeline {
                             }
                         }
                         if (slaveIp == null || slaveIp.isEmpty()) {
-                            slaveIp = '54.78.12.87' // <--- UPDATE THIS LINE with your latest Slave IP
+                            slaveIp = '34.241.242.253' // <--- UPDATE THIS LINE with your latest Slave IP
                         }
                         def sshKeyPath = '/home/ubuntu/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
                         sh "ssh -i ${sshKeyPath} ubuntu@${slaveIp} \"docker rm -f php-app || true\""
