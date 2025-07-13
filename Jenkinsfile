@@ -65,7 +65,7 @@ pipeline {
                     // Fallback in case dynamic lookup fails (though it should work now with grep/awk)
                     if (slaveIp == null || slaveIp.isEmpty()) {
                         echo "Warning: Could not dynamically determine slave IP from hosts file. Using hardcoded fallback."
-                        slaveIp = '54.195.215.77' // <--- UPDATE THIS LINE with your latest Slave IP
+                        slaveIp = '54.216.198.219' // <--- UPDATE THIS LINE with your latest Slave IP
                     }
 
                     echo "Cloning or updating project on Slave: ${slaveIp}"
@@ -92,7 +92,7 @@ pipeline {
                         // Re-read slave IP for cleanup
                         def slaveIp = sh(returnStdout: true, script: "grep 'ansible_user' ${masterProjectDir}/hosts | awk '{print \$1}'").trim()
                         if (slaveIp == null || slaveIp.isEmpty()) {
-                            slaveIp = '54.195.215.77' // Fallback
+                            slaveIp = '54.216.198.219' // Fallback
                         }
                         sh "ssh -i ${sshKeyPath} ubuntu@${slaveIp} \"docker rm -f php-app || true\""
                         echo 'Container deletion attempt completed.'
