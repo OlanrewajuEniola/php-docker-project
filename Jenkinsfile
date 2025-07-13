@@ -48,7 +48,7 @@ pipeline {
                         slaveIp = '108.130.148.200' // <--- UPDATE THIS LINE with your latest Slave IP
                     }
 
-                    def sshKeyPath = '/home/ubuntu/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
+                    def sshKeyPath = '/var/lib/jenkins/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
                     def remoteProjectDir = '/home/ubuntu/php-docker-project' // Desired project directory on the Slave
                     def githubRepo = 'https://github.com/OlanrewajuEniola/php-docker-project.git' // Your GitHub repository URL
 
@@ -89,7 +89,7 @@ pipeline {
                         if (slaveIp == null || slaveIp.isEmpty()) {
                             slaveIp = '108.130.148.200' // <--- UPDATE THIS LINE with your latest Slave IP
                         }
-                        def sshKeyPath = '/home/ubuntu/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
+                        def sshKeyPath = '/var/lib/jenkins/.ssh/IrelandKey.pem' // Path to your SSH key on the Master
                         sh "ssh -i ${sshKeyPath} ubuntu@${slaveIp} \"docker rm -f php-app || true\""
                         echo 'Container deletion attempt completed.'
                     }
